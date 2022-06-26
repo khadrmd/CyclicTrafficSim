@@ -21,11 +21,13 @@ public class Simulation : MonoBehaviour
 
     float[] carSpeeds;
     Transform[] cars;
+    double[] initCarPos;
 
     private void Start()
     {
         carSpeeds = new float[numOfCars];
         cars = new Transform[numOfCars];
+        initCarPos = new double[numOfCars];
 
         for (int i = numOfCars-1; i >= 0; i--)
         {
@@ -38,6 +40,7 @@ public class Simulation : MonoBehaviour
             car.transform.name = "Car " + (i+1);
             car.transform.Rotate(new Vector3(0, 0, 7.2f * i));
             cars[i] = car.transform;
+            initCarPos[i] = System.Math.Round(cars[i].eulerAngles.z, 1);
             car.GetComponentInChildren<SpriteRenderer>().color = new Color32((byte)Random.Range(0, 175), (byte)Random.Range(0, 175), (byte)Random.Range(0, 175), 255);
         }
 
@@ -80,16 +83,24 @@ public class Simulation : MonoBehaviour
                     carSpeeds[i] = Mathf.Min(carSpeeds[i] + 3.6f, vMax, dist - 3.6f);
                 }
 
-                cars[i].Rotate(new Vector3(0,0,carSpeeds[i]));
-
-                //For text
-                if (3.6 * 80 <= cars[i].eulerAngles.z && cars[i].eulerAngles.z <= 3.6 * 90) _avgCongestion++;
-                if (System.Math.Round(cars[i].eulerAngles.z + carSpeeds[i], 1) >= 360)
+                for (int j = 0; j < System.Math.Round(carSpeeds[i], 1) / 3.6f; j++)
                 {
-                    _avgReturn[i] += (n- _avgReturn[i]);
-                    _numReturn[i] += 1;
+                    cars[i].Rotate(new Vector3(0, 0, 3.6f));
+                    //For average return text
+                    if (System.Math.Round(cars[i].eulerAngles.z, 1) == initCarPos[i])
+                    {
+                        _avgReturn[i] += (n - _avgReturn[i]);
+                        _numReturn[i] += 1;
+                    }
                 }
-                //End of 'For text'
+                
+                //For average congestion text
+                if (3.6 * 80 <= cars[i].eulerAngles.z && cars[i].eulerAngles.z <= 3.6 * 90) _avgCongestion++;
+                //For average max congestion text
+                if (Mathf.Abs((float)System.Math.Round(cars[i].eulerAngles.z - cars[(i - 5 + numOfCars) % numOfCars].eulerAngles.z, 1)) == 18)
+                {
+                    _maxCongestion++;
+                }
             }
 
             //For applying text
@@ -97,10 +108,6 @@ public class Simulation : MonoBehaviour
             maxCongestion.text = (_maxCongestion / n).ToString();
             for (int i = numOfCars-1; i >= 0; i--)
             {
-                if (Mathf.Abs((float)System.Math.Round(cars[i].eulerAngles.z - cars[(i - 5 + numOfCars) % numOfCars].eulerAngles.z, 1)) == 18)
-                {
-                    _maxCongestion++;
-                }
                 avgReturn[i].text = System.Math.Round(_avgReturn[i] / _numReturn[i], 2).ToString();
             }
             //End of 'For applying text'
