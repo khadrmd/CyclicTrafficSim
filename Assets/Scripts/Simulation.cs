@@ -25,15 +25,18 @@ public class Simulation : MonoBehaviour
 
     private void Start()
     {
+        //Initiate arrays
         carSpeeds = new float[numOfCars];
         cars = new Transform[numOfCars];
         initCarPos = new double[numOfCars];
 
+        //Set initial speed
         for (int i = numOfCars-1; i >= 0; i--)
         {
             carSpeeds[i] = v0;
         }
 
+        //Initiate car positions and colors
         for (int i = 0; i < numOfCars; i++)
         {
             var car = Instantiate(Car);
@@ -44,9 +47,11 @@ public class Simulation : MonoBehaviour
             car.GetComponentInChildren<SpriteRenderer>().color = new Color32((byte)Random.Range(0, 175), (byte)Random.Range(0, 175), (byte)Random.Range(0, 175), 255);
         }
 
+        //View pointer for front car
         var temp = Instantiate(frontCarMark, cars[numOfCars-1]);
         temp.transform.localPosition = new Vector2(0, .5f);
-
+        
+        //Run simulation
         StartCoroutine(RunSim());
     }
 
@@ -86,6 +91,7 @@ public class Simulation : MonoBehaviour
                 for (int j = 0; j < System.Math.Round(carSpeeds[i], 1) / 3.6f; j++)
                 {
                     cars[i].Rotate(new Vector3(0, 0, 3.6f));
+
                     //For average return text
                     if (System.Math.Round(cars[i].eulerAngles.z, 1) == initCarPos[i])
                     {
@@ -93,7 +99,7 @@ public class Simulation : MonoBehaviour
                         _numReturn[i] += 1;
                     }
                 }
-                
+
                 //For average congestion text
                 if (3.6 * 80 <= cars[i].eulerAngles.z && cars[i].eulerAngles.z <= 3.6 * 90) _avgCongestion++;
                 //For average max congestion text
